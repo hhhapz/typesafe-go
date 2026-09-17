@@ -170,6 +170,11 @@ func decodeAnswer(raw json.RawMessage, q wireQuestion) (Answer, error) {
 				return nil, fmt.Errorf("probabilities: invalid entry %q: %v", label, p)
 			}
 		}
+		for _, label := range slices.Sorted(maps.Keys(labels)) {
+			if _, ok := probabilities[label]; !ok {
+				return nil, fmt.Errorf("probabilities: missing label %q", label)
+			}
+		}
 		return ChoiceAnswer{Choice: *w.Choice, Confidence: *w.Confidence, Probabilities: probabilities}, nil
 	}
 
@@ -192,6 +197,14 @@ func decodeAnswer(raw json.RawMessage, q wireQuestion) (Answer, error) {
 	for level, p := range probabilities {
 		if level < 0 || level > top || p < 0 || p > 1 {
 			return nil, fmt.Errorf("probabilities: invalid entry %d: %v", level, p)
+		}
+	}
+	for level := 0; level <= top; level++ {
+		if _, ok := probabilities[level]; !ok {
+			return nil, fmt.Errorf("probabilities: missing level %d", level)
+		}
+		if _, ok := w.Legend[level]; !ok {
+			return nil, fmt.Errorf("legend: missing level %d", level)
 		}
 	}
 	return ScoreAnswer{Score: *w.Score, Confidence: *w.Confidence, Legend: w.Legend, Probabilities: probabilities}, nil

@@ -54,7 +54,7 @@ type APIError struct {
 	Method     string
 	URL        string
 	RequestID  string
-	Message    string
+	Message    string // Provider message for explicit inspection. Excluded from Error().
 	Header     http.Header
 	Body       []byte // truncated to 64 KiB
 }
@@ -67,9 +67,6 @@ func (e *APIError) RetryAfter() (time.Duration, bool) {
 
 func (e *APIError) Error() string {
 	s := fmt.Sprintf("typesafe: %s %s: %d %s", e.Method, e.URL, e.StatusCode, http.StatusText(e.StatusCode))
-	if e.Message != "" {
-		s += ": " + e.Message
-	}
 	if e.RequestID != "" {
 		s += " (request " + e.RequestID + ")"
 	}

@@ -11,12 +11,15 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go: ["1.26.x", "1.27.x"]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.27.1"
+          go-version: ${{ matrix.go }}
           check-latest: true
 
       - name: gofmt
@@ -36,4 +39,5 @@ jobs:
         run: go test -race -run '^Test' ./...
 
       - name: govulncheck
+        if: matrix.go == '1.27.x'
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
